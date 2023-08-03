@@ -1,17 +1,14 @@
 import express from "express";
 import { connect } from "mongoose";
-import "./dotenv";
 import { envVars } from "./dotenv";
+import routes from "./routes/index";
 
-const App = express();
+export const App = express();
+App.use(express.json());
 
-App.get("*", (req, res) => {
-  res.send("Hello world");
-});
+App.use(routes);
 
-(async () => {
+App.listen(3000, async () => {
   await connect(envVars.mongoDBLink);
-  App.listen(3000, () => {
-    console.log("The server has been started at 3000 port");
-  });
-})();
+  console.log("The server has been started at 3000 port");
+});
