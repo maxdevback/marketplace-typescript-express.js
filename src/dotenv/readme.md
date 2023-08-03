@@ -1,0 +1,1 @@
+Here's the logic behind it. When filling the env file it is necessary to refer to Joi envSchema or to IConfig interface. Joi validates the variables and if everything converges then all envs exist and have the correct type. If not, the application falls into an error in which everything is described. As a result, we have typed env variables as an object.
