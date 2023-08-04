@@ -11,6 +11,9 @@ class CustomError extends Error implements ICustomError {
   static reqBodyInvalid(message: string) {
     return new CustomError(message, 422);
   }
+  static reqQueryInvalid(message: string) {
+    return new CustomError(message, 422);
+  }
 
   //Databases
   static alreadyExist(message: string) {

@@ -6,6 +6,7 @@ dotenv.config();
 
 const envVarsFromProcess = {
   mongoDBLink: process.env.MONGODB_LINK,
+  port: process.env.PORT,
 };
 
 const checkRes = envSchema.validate(envVarsFromProcess);

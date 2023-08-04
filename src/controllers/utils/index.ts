@@ -11,21 +11,19 @@ class Utils {
     res.send({ body });
   }
   sendWrongResponse(res: Response<IWrongResponse>, err: Error) {
-    console.log(err);
     if (err instanceof CustomError) {
       res.status(err.httpStatus);
       res.send({ message: err.message });
     } else {
       try {
         res.status(500);
-        this.sendErrorInServerResponse(res, err);
+        this._sendErrorInServerResponse(res, err);
       } catch (err) {
-        //TODO:
-        //If very unexpected error
+        res.send({ message: "Very wrong response" });
       }
     }
   }
-  sendErrorInServerResponse(res: Response, error: Error) {
+  _sendErrorInServerResponse(res: Response, error: Error) {
     res.send({ error, errorMessage: error.message });
   }
 }

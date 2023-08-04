@@ -8,7 +8,7 @@ App.use(express.json());
 
 App.use(routes);
 
-App.listen(3000, async () => {
+App.listen(envVars.port, async () => {
   await connect(envVars.mongoDBLink);
   console.log("The server has been started at 3000 port");
 });
