@@ -22,6 +22,10 @@ class CustomError extends Error implements ICustomError {
   static notExist(message: string) {
     return new CustomError(message, 404);
   }
+
+  static notAuth() {
+    return new CustomError("Auth first", 401);
+  }
 }
 
 export default CustomError;

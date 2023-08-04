@@ -16,3 +16,13 @@ export type IResponse =
   | ISuccessResponse
   | IWrongResponse
   | IErrorInServerResponse;
+
+declare global {
+  namespace Express {
+    interface Request {
+      customAuth: {
+        id: string;
+      };
+    }
+  }
+}
