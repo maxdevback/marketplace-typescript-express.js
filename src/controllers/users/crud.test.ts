@@ -77,6 +77,7 @@ describe("Testing CRUD user", () => {
       .expect((res) => {
         res.body.body.username === "NewUsername";
       });
+    //TODO:
   });
   test("Edit user with wrong field", async () => {
     await request(App)
@@ -88,6 +89,7 @@ describe("Testing CRUD user", () => {
       .expect((res) => {
         res.body.body.username === "NewUsername";
       });
+    //TODO:
   });
   test("Deleting by wrong Id", async () => {
     await request(App).get(`/users/${wrongId}`).expect(404);

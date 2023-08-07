@@ -7,7 +7,8 @@ import {
 import CustomError from "../../models/error";
 
 class Utils {
-  sendSuccessResponse(res: Response<ISuccessResponse>, body: object) {
+  //TODO: change Body to object
+  sendSuccessResponse(res: Response<ISuccessResponse>, body: any) {
     res.send({ body });
   }
   sendWrongResponse(res: Response<IWrongResponse>, err: Error) {

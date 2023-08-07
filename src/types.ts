@@ -1,7 +1,8 @@
+import { Types } from "mongoose";
 //TODO: change response
 
 export interface ISuccessResponse {
-  body: object;
+  body: any;
 }
 
 export interface IWrongResponse {
@@ -21,7 +22,7 @@ declare global {
   namespace Express {
     interface Request {
       customAuth: {
-        id: string;
+        id: Types.ObjectId;
       };
     }
   }

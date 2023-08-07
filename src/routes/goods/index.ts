@@ -5,7 +5,7 @@ const router = Router();
 router.get("/", GoodsController.getAllByAuth);
 router.get("/:id", GoodsController.getById);
 router.post("/", GoodsController.create);
-router.patch("/", GoodsController.edit);
-router.delete("/", GoodsController.delete);
+router.patch("/:id", GoodsController.patch);
+router.delete("/:id", GoodsController.delete);
 
 export default router;

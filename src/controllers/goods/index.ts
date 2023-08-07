@@ -1,39 +1,64 @@
 import { Request, Response } from "express";
+import { Types } from "mongoose";
+import GoodDB from "../../models/database/good/logic";
 import Utils from "../utils";
 import CustomError from "../../models/error";
 import { ICreateGood } from "./types";
 
 class GoodController {
-  getAllByAuth(req: Request, res: Response) {
+  async getAllBySellerId(
+    req: Request<{ sellerId: Types.ObjectId }>,
+    res: Response
+  ) {
     try {
-      if (!req.customAuth) throw CustomError.notAuth();
+      Utils.sendSuccessResponse(
+        res,
+        await GoodDB.getAllBySellerId(req.params.sellerId)
+      );
+      GoodDB;
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
-  getById(req: Request, res: Response) {
+  async getById(req: Request<{ goodId: Types.ObjectId }>, res: Response) {
     try {
-      if (!req.customAuth) throw CustomError.notAuth();
+      Utils.sendSuccessResponse(
+        res,
+        await GoodDB.getAllBySellerId(req.params.goodId)
+      );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
-  create(req: Request<{}, {}, ICreateGood>, res: Response) {
+  async create(req: Request<{}, {}, ICreateGood>, res: Response) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      Utils.sendSuccessResponse(
+        res,
+        await GoodDB.create(req.customAuth.id, req.body)
+      );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
-  edit(req: Request, res: Response) {
+  async patch(req: Request<{ id: string }, {}, ICreateGood>, res: Response) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      Utils.sendSuccessResponse(
+        res,
+        await GoodDB.patch(req.params.id, req.body)
+      );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
-  delete(req: Request, res: Response) {
+  async delete(req: Request<{ id: string }>, res: Response) {
     try {
+      if (!req.customAuth) throw CustomError.notAuth();
+      Utils.sendSuccessResponse(
+        res,
+        await GoodDB.delete(req.params.id, req.customAuth.id)
+      );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
