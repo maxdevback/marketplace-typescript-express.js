@@ -1,4 +1,5 @@
 import CustomError from "../../../models/error";
+import DefaultValidate from "../../validate";
 import {
   ICreateUser,
   IGetUsersQuery,
@@ -8,7 +9,7 @@ import {
 } from "../types";
 import UsersSchemas from "./schemas";
 
-class ValidateUser {
+class ValidateUser extends DefaultValidate {
   validateCreateBody(body: ICreateUser) {
     const res = UsersSchemas.createSchema.validate(body);
     if (res.error)
@@ -29,11 +30,6 @@ class ValidateUser {
     if (res.error)
       throw CustomError.reqBodyInvalid("Body invalid " + res.error.message);
     return res.value;
-  }
-  validateId(id: string) {
-    const res = UsersSchemas.idSchema.validate({ id });
-    if (res.error)
-      throw CustomError.reqQueryInvalid("Params invalid " + res.error.message);
   }
   validateQuery(query: IGetUsersQuery) {
     const res = UsersSchemas.getAllQuery.validate(query);

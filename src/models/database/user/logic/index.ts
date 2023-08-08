@@ -8,10 +8,12 @@ import {
 import CustomError from "../../../error";
 import { UserModel } from "../entity/model";
 import { IGetUsersQuery } from "./types";
+import { FilterQuery, Types } from "mongoose";
+import { IUser } from "../entity/types";
 
 class UserDB {
-  _returnSafeData() {
-    //TODO: create method and use for all responses
+  _returnSafeData(user: IUser) {
+    return { username: user.username, about: user.about, _id: user._id };
   }
   _pagination(page: number, pageSize: number) {
     return {
@@ -19,11 +21,14 @@ class UserDB {
       limit: pageSize,
     };
   }
-  async getById(id: string) {
+  async getExternal(id: Types.ObjectId) {
+    return await UserModel.findById(id);
+  }
+  async getById(id: Types.ObjectId) {
     const user = await UserModel.findById(id);
     if (!user)
       throw CustomError.notExist("The user with that id dose not exist");
-    return user;
+    return this._returnSafeData(user);
   }
   async getAll(query: IGetUsersQuery) {
     const dbSearch = query.usernamePart
@@ -34,7 +39,10 @@ class UserDB {
       const pagination = this._pagination(query.page, query.pageSize);
       dbSearch.skip(pagination.skip).limit(pagination.limit);
     }
-    return await dbSearch.exec();
+    const users = await dbSearch.exec();
+    return users.map((user) => {
+      return this._returnSafeData(user);
+    });
   }
   async create(data: ICreateUser) {
     const userWithThatUsername = await UserModel.findOne({
@@ -44,7 +52,7 @@ class UserDB {
       throw CustomError.alreadyExist(
         "The user with that username already exist"
       );
-    return await UserModel.create(data);
+    return this._returnSafeData(await UserModel.create(data));
   }
   //TODO: Maybe move the search user logic into a separate internal method
   async login(data: ILoginUser) {
@@ -54,7 +62,7 @@ class UserDB {
         "The user with this combination of login and password was not found"
       );
     if (await comparePassword(data.password, userFromDB.password))
-      return userFromDB;
+      return this._returnSafeData(userFromDB);
     throw CustomError.notExist(
       "The user with this combination of login and password was not found"
     );
@@ -66,25 +74,25 @@ class UserDB {
         "The user with that username already exist"
       );
     const hashedPassword = await hashPassword(data.password, 10);
-    return await UserModel.create({ ...data, password: hashedPassword });
+    return this._returnSafeData(
+      await UserModel.create({ ...data, password: hashedPassword })
+    );
   }
-  async delete(id: string) {
+  async delete(id: Types.ObjectId) {
     const user = await UserModel.findByIdAndDelete(id);
     if (!user)
       throw CustomError.notExist("The user with that id dose not found");
-    return user;
+    return this._returnSafeData(user);
   }
-  async patch(id: string, data: IPatchUser) {
+  async patch(id: Types.ObjectId, data: IPatchUser) {
     const user = await UserModel.findById(id);
     if (!user)
       throw CustomError.notExist("The user with that id dose not found");
 
-    for (let key in data) {
-      //@ts-ignore
-      //TODO: Later type
-      user[key] = data[key];
-    }
-    return await user.save();
+    const updatedUser = await UserModel.findByIdAndUpdate(id, data);
+    if (!updatedUser)
+      throw CustomError.notExist("The user with that id dose not found");
+    return this._returnSafeData(updatedUser);
   }
 }
 

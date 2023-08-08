@@ -9,7 +9,7 @@ export const authMiddleware = (
   req.customAuth = {
     //TODO: plug
     //@ts-ignore
-    id: "64cbb87c2e9916f696026dad",
+    id: "64d211123c134cbe155ad69c",
   };
   next();
 };

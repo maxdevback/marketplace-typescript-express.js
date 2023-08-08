@@ -18,8 +18,10 @@ class Utils {
     } else {
       try {
         res.status(500);
+        console.log("Error", err);
         this._sendErrorInServerResponse(res, err);
       } catch (err) {
+        res.status(500);
         res.send({ message: "Very wrong response" });
       }
     }

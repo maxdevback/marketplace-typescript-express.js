@@ -22,8 +22,8 @@ class UserValidateSchemas {
 
   getAllQuery = Joi.object({
     usernamePart: Joi.string(),
-    page: Joi.number(),
-    pageSize: Joi.number(),
+    page: Joi.number().min(1),
+    pageSize: Joi.number().min(5),
   }).with("page", "pageSize");
 
   patchSchema = Joi.object({

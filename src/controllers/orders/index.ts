@@ -3,11 +3,14 @@ import Utils from "../utils";
 import OrderDB from "../../models/database/orders/logic";
 import CustomError from "../../models/error";
 import { Types } from "mongoose";
+import OrderValidate from "./validate";
+import { IChangeStatusOrder, ICreateOrder } from "./types";
 
 class OrdersController {
   async getById(req: Request<{ orderId: Types.ObjectId }>, res: Response) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      OrderValidate.validateId(req.params.orderId);
       Utils.sendSuccessResponse(res, await OrderDB.getById(req.params.orderId));
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
@@ -46,10 +49,10 @@ class OrdersController {
       Utils.sendWrongResponse(res, err);
     }
   }
-  //TODO: any
-  async create(req: Request<{}, {}, any>, res: Response) {
+  async create(req: Request<{}, {}, ICreateOrder>, res: Response) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      OrderValidate.create(req.body);
       Utils.sendSuccessResponse(
         res,
         await OrderDB.create({ ...req.body, buyerId: req.customAuth.id })
@@ -59,14 +62,17 @@ class OrdersController {
     }
   }
   async changeStatus(
-    req: Request<{ orderId: Types.ObjectId }, {}, { newStatus: string }>,
+    req: Request<{ orderId: Types.ObjectId }, {}, IChangeStatusOrder>,
     res: Response
   ) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      const validatedBody: IChangeStatusOrder = OrderValidate.changeStatus(
+        req.body
+      );
       Utils.sendSuccessResponse(
         res,
-        await OrderDB.changeStatus(req.params.orderId, req.body.newStatus)
+        await OrderDB.changeStatus(req.params.orderId, validatedBody.newStatus)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
@@ -78,6 +84,7 @@ class OrdersController {
   ) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      OrderValidate.validateId(req.params.orderId);
       Utils.sendSuccessResponse(
         res,
         await OrderDB.deleteUnconfirmed(req.params.orderId)
@@ -88,14 +95,16 @@ class OrdersController {
   }
   //TODO: change any body
   async patchUnconfirmed(
-    req: Request<{ orderId: Types.ObjectId }, {}, any>,
+    req: Request<{ orderId: Types.ObjectId }, {}, ICreateOrder>,
     res: Response
   ) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      OrderValidate.validateId(req.params.orderId);
+      const validatedBody = OrderValidate.create(req.body);
       Utils.sendSuccessResponse(
         res,
-        await OrderDB.patchUnconfirmed(req.params.orderId, req.body)
+        await OrderDB.patchUnconfirmed(req.params.orderId, validatedBody)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);

@@ -3,11 +3,14 @@ import Utils from "../utils";
 import CustomError from "../../models/error";
 import ReviewDB from "../../models/database/review/logic";
 import { Types } from "mongoose";
+import ReviewValidate from "./validate";
+import { ICreateReview } from "./types";
 
 //TODO: Change any body to interfaces
 class ReviewsController {
   async getById(req: Request<{ reviewId: Types.ObjectId }>, res: Response) {
     try {
+      ReviewValidate.validateId(req.params.reviewId);
       Utils.sendSuccessResponse(
         res,
         await ReviewDB.getById(req.params.reviewId)
@@ -18,6 +21,7 @@ class ReviewsController {
   }
   async getByOrderId(req: Request<{ orderId: Types.ObjectId }>, res: Response) {
     try {
+      ReviewValidate.validateId(req.params.orderId);
       Utils.sendSuccessResponse(
         res,
         await ReviewDB.getByOrderId(req.params.orderId)
@@ -31,6 +35,7 @@ class ReviewsController {
     res: Response
   ) {
     try {
+      ReviewValidate.validateId(req.params.buyerId);
       Utils.sendSuccessResponse(
         res,
         await ReviewDB.getAllByBuyerId(req.params.buyerId)
@@ -44,6 +49,7 @@ class ReviewsController {
     res: Response
   ) {
     try {
+      ReviewValidate.validateId(req.params.sellerId);
       Utils.sendSuccessResponse(
         res,
         await ReviewDB.getAllBySellerId(req.params.sellerId)
@@ -57,6 +63,7 @@ class ReviewsController {
     res: Response
   ) {
     try {
+      ReviewValidate.validateId(req.params.goodId);
       Utils.sendSuccessResponse(
         res,
         await ReviewDB.getAllByGoodId(req.params.goodId)
@@ -65,26 +72,29 @@ class ReviewsController {
       Utils.sendWrongResponse(res, err);
     }
   }
-  async create(req: Request, res: Response) {
+  async create(req: Request<{}, {}, ICreateReview>, res: Response) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      const validatedBody = ReviewValidate.create(req.body);
       Utils.sendSuccessResponse(
         res,
-        await ReviewDB.create({ ...req.body.data, buyerId: req.customAuth.id })
+        await ReviewDB.create(req.customAuth.id, validatedBody)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
   async patch(
-    req: Request<{ reviewId: Types.ObjectId }, {}, { data: any }>,
+    req: Request<{ reviewId: Types.ObjectId }, {}, ICreateReview>,
     res: Response
   ) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      ReviewValidate.validateId(req.params.reviewId);
+      const validatedBody = ReviewValidate.create(req.body);
       Utils.sendSuccessResponse(
         res,
-        await ReviewDB.patch(req.params.reviewId, req.body.data)
+        await ReviewDB.patch(req.params.reviewId, validatedBody)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
@@ -93,6 +103,7 @@ class ReviewsController {
   async delete(req: Request<{ reviewId: Types.ObjectId }>, res: Response) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      ReviewValidate.validateId(req.params.reviewId);
       Utils.sendSuccessResponse(
         res,
         await ReviewDB.delete(req.params.reviewId)

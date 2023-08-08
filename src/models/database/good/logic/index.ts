@@ -1,38 +1,82 @@
-import { ICreateGood } from "../../../../controllers/goods/types";
+import { ICreateOrPatchGood } from "../../../../controllers/goods/types";
 import { Types } from "mongoose";
 import CustomError from "../../../error";
 import { GoodModel } from "../entity/model";
+import UserDB from "../../user/logic";
+import { IGetGoodsQuery } from "./types";
 
-//TODO:
 class GoodDB {
-  async create(sellerId: Types.ObjectId, data: ICreateGood) {
-    return await GoodModel.create({ ...data, sellerId });
+  _pagination(page: number, pageSize: number) {
+    return {
+      skip: page === 0 ? 0 : (page - 1) * pageSize,
+      limit: pageSize,
+    };
   }
-  async getById(id: string, sellerId: Types.ObjectId) {
-    return await GoodModel.findOne({ _id: id, sellerId: sellerId });
+  _searchWithQuery(query: IGetGoodsQuery) {
+    const conditions: any = {};
+    if (query.tittle) {
+      conditions.title = query.tittle;
+    }
+    if (query.description) {
+      conditions.description = query.description;
+    }
+    if (query.minPrice || query.maxPrice) {
+      conditions.price = {};
+    }
+    if (query.minPrice) {
+      conditions.price.$gte = query.minPrice;
+    }
+    if (query.maxPrice) {
+      conditions.price.$lte = query.maxPrice;
+    }
+    const dbSearch = GoodModel.find(conditions);
+    if (query.page) {
+      const pagination = this._pagination(query.page, query.pageSize);
+      dbSearch.skip(pagination.skip).limit(pagination.limit);
+    }
+    return dbSearch;
   }
-  async getAllBySellerId(sellerId: Types.ObjectId) {
-    return await GoodModel.find({ sellerId });
+  async getExternal(goodId: Types.ObjectId) {
+    return GoodModel.findById(goodId);
   }
-  async delete(id: string, sellerId: Types.ObjectId) {
-    const good = await GoodModel.findByIdAndDelete(id);
-    if (!good) throw CustomError.notExist("Not found");
-    if (good.sellerId !== sellerId)
-      throw CustomError.notExist("The good dose not exist");
-
+  async create(sellerId: Types.ObjectId, data: ICreateOrPatchGood) {
+    const duplicate = await GoodModel.findOne({ tittle: data.title });
+    if (duplicate)
+      throw CustomError.alreadyExist("The good with that tittle already exist");
+    const good = await GoodModel.create({ ...data, sellerId });
     return good;
   }
-  async patch(id: string, data: ICreateGood) {
+  async getById(goodId: Types.ObjectId) {
+    const good = await GoodModel.findById(goodId);
+    if (!good)
+      throw CustomError.notExist("The good with that id dose not exist");
+    return good;
+  }
+  async getAll(query: IGetGoodsQuery) {
+    return await this._searchWithQuery(query);
+  }
+  async getAllBySellerId(sellerId: Types.ObjectId, query?: IGetGoodsQuery) {
+    const user = await UserDB.getExternal(sellerId);
+    if (!user)
+      throw CustomError.notExist("The user with that id dose not exist");
+    const dbSearch = query
+      ? this._searchWithQuery(query)
+      : GoodModel.find({ sellerId });
+    return await dbSearch.where("sellerId", sellerId);
+  }
+  async delete(id: string, sellerId: Types.ObjectId) {
+    const good = await GoodModel.findById(id);
+    if (!good) throw CustomError.notExist("The good not found");
+    if (good.sellerId.toString() !== sellerId.toString())
+      throw CustomError.notExist("You're not owner of this good");
+    return good;
+  }
+  async patch(id: string, data: ICreateOrPatchGood) {
     const good = await GoodModel.findById(id);
     if (!good)
-      throw CustomError.notExist("The good with that id dose not found");
+      throw CustomError.notExist("The good with that id dose not exist");
 
-    for (let key in data) {
-      //@ts-ignore
-      //TODO: Later type
-      good[key] = data[key];
-    }
-    return await good.save();
+    return await GoodModel.findByIdAndUpdate(id, data);
   }
 }
 

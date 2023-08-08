@@ -3,6 +3,9 @@ import { OrderModel } from "../entity/model";
 import CustomError from "../../../error";
 
 class OrderDB {
+  async getExternal(id: Types.ObjectId) {
+    return await OrderModel.findById(id);
+  }
   async getById(orderId: Types.ObjectId) {
     return await OrderModel.findById(orderId);
   }

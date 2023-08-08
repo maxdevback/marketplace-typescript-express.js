@@ -9,6 +9,7 @@ import {
   IPatchUser,
   IRegisterUser,
 } from "./types";
+import { Types } from "mongoose";
 
 class UserController {
   async getAll(req: Request<{}, IGetUsersQuery>, res: Response) {
@@ -19,10 +20,10 @@ class UserController {
       Utils.sendWrongResponse(res, err);
     }
   }
-  async getById(req: Request<{ id: string }>, res: Response) {
+  async getById(req: Request<{ userId: Types.ObjectId }>, res: Response) {
     try {
-      UsersValidate.validateId(req.params.id);
-      Utils.sendSuccessResponse(res, await UserDB.getById(req.params.id));
+      UsersValidate.validateId(req.params.userId);
+      Utils.sendSuccessResponse(res, await UserDB.getById(req.params.userId));
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
@@ -51,21 +52,24 @@ class UserController {
       Utils.sendWrongResponse(res, err);
     }
   }
-  async patch(req: Request<{ id: string }, {}, IPatchUser>, res: Response) {
+  async patch(
+    req: Request<{ userId: Types.ObjectId }, {}, IPatchUser>,
+    res: Response
+  ) {
     try {
-      UsersValidate.validateId(req.params.id);
+      UsersValidate.validateId(req.params.userId);
       const validatedBody = UsersValidate.validatePatchBody(req.body);
       Utils.sendSuccessResponse(
         res,
-        await UserDB.patch(req.params.id, validatedBody)
+        await UserDB.patch(req.params.userId, validatedBody)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
-  async delete(req: Request<{ id: string }>, res: Response) {
+  async delete(req: Request<{ userId: Types.ObjectId }>, res: Response) {
     try {
-      Utils.sendSuccessResponse(res, await UserDB.delete(req.params.id));
+      Utils.sendSuccessResponse(res, await UserDB.delete(req.params.userId));
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
