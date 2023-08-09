@@ -14,8 +14,8 @@ class GoodDB {
   }
   _searchWithQuery(query: IGetGoodsQuery) {
     const conditions: any = {};
-    if (query.tittle) {
-      conditions.title = query.tittle;
+    if (query.title) {
+      conditions.title = query.title;
     }
     if (query.description) {
       conditions.description = query.description;
@@ -39,10 +39,17 @@ class GoodDB {
   async getExternal(goodId: Types.ObjectId) {
     return GoodModel.findById(goodId);
   }
-  async create(sellerId: Types.ObjectId, data: ICreateOrPatchGood) {
-    const duplicate = await GoodModel.findOne({ tittle: data.title });
-    if (duplicate)
-      throw CustomError.alreadyExist("The good with that tittle already exist");
+  async create(
+    sellerId: Types.ObjectId,
+    data: ICreateOrPatchGood,
+    files?: [{ filename: string }]
+  ) {
+    const duplicate = await GoodModel.findOne({ title: data.title });
+    console.log(duplicate);
+    if (duplicate) {
+      throw CustomError.alreadyExist("The good with that title already exist");
+    }
+
     const good = await GoodModel.create({ ...data, sellerId });
     return good;
   }

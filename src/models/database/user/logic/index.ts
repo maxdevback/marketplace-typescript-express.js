@@ -13,7 +13,13 @@ import { IUser } from "../entity/types";
 
 class UserDB {
   _returnSafeData(user: IUser) {
-    return { username: user.username, about: user.about, _id: user._id };
+    const res: any = {
+      username: user.username,
+      about: user.about,
+      _id: user._id,
+    };
+    if (user.avatarLink) res.avatarLink = user.avatarLink;
+    return res;
   }
   _pagination(page: number, pageSize: number) {
     return {
@@ -23,6 +29,22 @@ class UserDB {
   }
   async getExternal(id: Types.ObjectId) {
     return await UserModel.findById(id);
+  }
+  async getAuthTokens(id: Types.ObjectId) {
+    const user = await UserModel.findById(id);
+    if (!user)
+      throw CustomError.notExist("The user with that id dose not exist");
+    return user.authTokens;
+  }
+  async setAuthTokens(
+    id: Types.ObjectId,
+    tokens: { tokenA: string; tokenR: string }
+  ) {
+    const user = await UserModel.findById(id);
+    if (!user)
+      throw CustomError.notExist("The user with that id dose not exist");
+    user.authTokens.push(tokens);
+    await user.save();
   }
   async getById(id: Types.ObjectId) {
     const user = await UserModel.findById(id);
@@ -44,17 +66,6 @@ class UserDB {
       return this._returnSafeData(user);
     });
   }
-  async create(data: ICreateUser) {
-    const userWithThatUsername = await UserModel.findOne({
-      username: data.username,
-    });
-    if (userWithThatUsername)
-      throw CustomError.alreadyExist(
-        "The user with that username already exist"
-      );
-    return this._returnSafeData(await UserModel.create(data));
-  }
-  //TODO: Maybe move the search user logic into a separate internal method
   async login(data: ILoginUser) {
     const userFromDB = await UserModel.findOne({ username: data.username });
     if (!userFromDB)
@@ -78,18 +89,30 @@ class UserDB {
       await UserModel.create({ ...data, password: hashedPassword })
     );
   }
+  async logout(userId: Types.ObjectId, tokenR: string) {
+    const user = await UserModel.findById(userId);
+    if (!user) return;
+    const newAuth = user?.authTokens.filter((item) => item.tokenR !== tokenR);
+    user.authTokens = newAuth;
+    await user.save();
+  }
   async delete(id: Types.ObjectId) {
     const user = await UserModel.findByIdAndDelete(id);
     if (!user)
       throw CustomError.notExist("The user with that id dose not found");
     return this._returnSafeData(user);
   }
-  async patch(id: Types.ObjectId, data: IPatchUser) {
+  async patch(
+    id: Types.ObjectId,
+    data: IPatchUser,
+    avatarLink: string | undefined
+  ) {
     const user = await UserModel.findById(id);
     if (!user)
       throw CustomError.notExist("The user with that id dose not found");
-
-    const updatedUser = await UserModel.findByIdAndUpdate(id, data);
+    let update: any = { ...data };
+    if (avatarLink) update.avatarLink = avatarLink;
+    const updatedUser = await UserModel.findByIdAndUpdate(id, update);
     if (!updatedUser)
       throw CustomError.notExist("The user with that id dose not found");
     return this._returnSafeData(updatedUser);

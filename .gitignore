@@ -13,3 +13,6 @@ build
 
 # log
 log.txt
+
+# images
+/src/models/multer/images

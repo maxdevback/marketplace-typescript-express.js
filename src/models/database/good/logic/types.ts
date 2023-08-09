@@ -1,5 +1,5 @@
 interface IGetGoodsQueryWithoutPagination {
-  tittle?: undefined | string;
+  title?: undefined | string;
   description?: undefined | string;
   minPrice?: undefined | number;
   maxPrice?: undefined | number;

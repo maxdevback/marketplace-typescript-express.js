@@ -6,7 +6,12 @@ class OrderDB {
   async getExternal(id: Types.ObjectId) {
     return await OrderModel.findById(id);
   }
-  async getById(orderId: Types.ObjectId) {
+  async getById(orderId: Types.ObjectId, authId: Types.ObjectId) {
+    const order = await OrderModel.findById(authId);
+    if (!order)
+      throw CustomError.notExist("The order with that id dose not exist");
+    if (order.buyerId !== authId && order.sellerId !== authId)
+      throw CustomError.forbidden();
     return await OrderModel.findById(orderId);
   }
   async getAllBySellerId(sellerId: Types.ObjectId) {
@@ -25,27 +30,35 @@ class OrderDB {
   }) {
     return await OrderModel.create(data);
   }
-  async changeStatus(orderId: Types.ObjectId, newStatus: string) {
+  async changeStatus(
+    orderId: Types.ObjectId,
+    newStatus: string,
+    authId: Types.ObjectId
+  ) {
+    const order = await OrderModel.findById(orderId);
+    if (!order)
+      throw CustomError.notExist("The order with that id dose not exist");
+    if (order.sellerId !== authId) throw CustomError.forbidden();
     return await OrderModel.findByIdAndUpdate(orderId, { status: newStatus });
   }
-  async deleteUnconfirmed(orderId: Types.ObjectId) {
+  async deleteUnconfirmed(orderId: Types.ObjectId, authId: Types.ObjectId) {
     const order = await OrderModel.findById(orderId);
     //TODO: Create and change method for custom error
-    if (!order || order.status !== "unconfirmed")
-      throw CustomError.notExist("");
+    if (!order)
+      throw CustomError.notExist("The order with that id dose not exist");
+    if (order.status !== "unconfirmed")
+      throw CustomError.alreadyExist("The order already confirmed");
+    if (order.sellerId !== authId) throw CustomError.forbidden();
     return await OrderModel.deleteOne({ id: orderId });
   }
   //TODO: Create interfaces and change any type to interface
   async patchUnconfirmed(orderId: Types.ObjectId, data: any) {
     const order = await OrderModel.findById(orderId);
-    if (!order || order.status !== "unconfirmed")
-      throw CustomError.notExist("");
-    for (let key in data) {
-      //@ts-ignore
-      //TODO: Later type
-      order[key] = data[key];
-    }
-    return await order.save();
+    if (!order)
+      throw CustomError.notExist("The good with that id dose not exist");
+    if (order.status !== "unconfirmed")
+      throw CustomError.alreadyExist("The order already confirmed");
+    return await OrderModel.findOneAndUpdate({ id: orderId }, data);
   }
 }
 

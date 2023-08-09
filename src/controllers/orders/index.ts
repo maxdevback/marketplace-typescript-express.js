@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Utils from "../utils";
-import OrderDB from "../../models/database/orders/logic";
+import OrderDB from "../../models/database/order/logic";
 import CustomError from "../../models/error";
 import { Types } from "mongoose";
 import OrderValidate from "./validate";
@@ -11,7 +11,10 @@ class OrdersController {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
       OrderValidate.validateId(req.params.orderId);
-      Utils.sendSuccessResponse(res, await OrderDB.getById(req.params.orderId));
+      Utils.sendSuccessResponse(
+        res,
+        await OrderDB.getById(req.params.orderId, req.customAuth.id)
+      );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
@@ -72,7 +75,11 @@ class OrdersController {
       );
       Utils.sendSuccessResponse(
         res,
-        await OrderDB.changeStatus(req.params.orderId, validatedBody.newStatus)
+        await OrderDB.changeStatus(
+          req.params.orderId,
+          validatedBody.newStatus,
+          req.customAuth.id
+        )
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
@@ -87,13 +94,12 @@ class OrdersController {
       OrderValidate.validateId(req.params.orderId);
       Utils.sendSuccessResponse(
         res,
-        await OrderDB.deleteUnconfirmed(req.params.orderId)
+        await OrderDB.deleteUnconfirmed(req.params.orderId, req.customAuth.id)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
-  //TODO: change any body
   async patchUnconfirmed(
     req: Request<{ orderId: Types.ObjectId }, {}, ICreateOrder>,
     res: Response

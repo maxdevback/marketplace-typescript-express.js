@@ -54,6 +54,7 @@ class GoodController {
   async create(req: Request<{}, {}, ICreateOrPatchGood>, res: Response) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      console.log(req.files);
       const validatedBody: ICreateOrPatchGood =
         ValidateGood.validateCreateOrPatch(req.body);
       Utils.sendSuccessResponse(

@@ -26,6 +26,9 @@ class CustomError extends Error implements ICustomError {
   static notAuth() {
     return new CustomError("Auth first", 401);
   }
+  static forbidden() {
+    return new CustomError("You're not owner", 403);
+  }
 }
 
 export default CustomError;

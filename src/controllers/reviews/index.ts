@@ -78,7 +78,11 @@ class ReviewsController {
       const validatedBody = ReviewValidate.create(req.body);
       Utils.sendSuccessResponse(
         res,
-        await ReviewDB.create(req.customAuth.id, validatedBody)
+        await ReviewDB.create(
+          req.customAuth.id,
+          validatedBody.sellerId,
+          validatedBody
+        )
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
@@ -94,7 +98,11 @@ class ReviewsController {
       const validatedBody = ReviewValidate.create(req.body);
       Utils.sendSuccessResponse(
         res,
-        await ReviewDB.patch(req.params.reviewId, validatedBody)
+        await ReviewDB.patch(
+          req.params.reviewId,
+          validatedBody,
+          req.customAuth.id
+        )
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
@@ -106,7 +114,7 @@ class ReviewsController {
       ReviewValidate.validateId(req.params.reviewId);
       Utils.sendSuccessResponse(
         res,
-        await ReviewDB.delete(req.params.reviewId)
+        await ReviewDB.delete(req.params.reviewId, req.customAuth.id)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);

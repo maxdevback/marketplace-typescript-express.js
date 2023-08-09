@@ -1,13 +1,19 @@
 import express from "express";
+import path from "path";
 import { connect } from "mongoose";
 import { envVars } from "./dotenv";
-import Logger from "./models/logger";
 
 import middlewares from "./middlewares";
 import routes from "./routes/index";
+import cookieParser from "cookie-parser";
 
 export const App = express();
 App.use(express.json());
+App.use(cookieParser());
+App.use(
+  "/images",
+  express.static(path.resolve(__dirname, "models", "multer", "images"))
+);
 
 App.use(middlewares);
 App.use(routes);

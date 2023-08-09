@@ -1,28 +1,34 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import {
   IErrorInServerResponse,
   ISuccessResponse,
   IWrongResponse,
 } from "../../types";
 import CustomError from "../../models/error";
+import logger from "../../models/logger";
 
 class Utils {
-  //TODO: change Body to object
   sendSuccessResponse(res: Response<ISuccessResponse>, body: any) {
     res.send({ body });
   }
-  sendWrongResponse(res: Response<IWrongResponse>, err: Error) {
+  sendWrongResponse(
+    res: Response<IWrongResponse | IErrorInServerResponse>,
+    err: Error
+  ) {
     if (err instanceof CustomError) {
       res.status(err.httpStatus);
       res.send({ message: err.message });
     } else {
       try {
         res.status(500);
-        console.log("Error", err);
+        logger.add(err);
         this._sendErrorInServerResponse(res, err);
-      } catch (err) {
+      } catch (err: any) {
         res.status(500);
-        res.send({ message: "Very wrong response" });
+        res.send({
+          message: "Very wrong response",
+          error: err,
+        });
       }
     }
   }

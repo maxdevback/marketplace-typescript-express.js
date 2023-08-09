@@ -9,7 +9,7 @@ export interface IWrongResponse {
   message: string;
 }
 export interface IErrorInServerResponse {
-  errorMessage: string;
+  message: string;
   error: Error;
 }
 
@@ -17,13 +17,3 @@ export type IResponse =
   | ISuccessResponse
   | IWrongResponse
   | IErrorInServerResponse;
-
-declare global {
-  namespace Express {
-    interface Request {
-      customAuth: {
-        id: Types.ObjectId;
-      };
-    }
-  }
-}
