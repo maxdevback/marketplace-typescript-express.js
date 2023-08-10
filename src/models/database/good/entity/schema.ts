@@ -5,5 +5,6 @@ export const goodSchema = new Schema<IGood>({
   title: { type: String, required: true, unique: true },
   description: { type: String, required: true },
   price: { type: Number, required: true },
-  sellerId: { type: Schema.Types.ObjectId, ref: "user", required: true },
+  sellerId: { type: Schema.Types.ObjectId, ref: "users", required: true },
+  filesPaths: [String],
 });

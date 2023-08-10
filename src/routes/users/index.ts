@@ -6,10 +6,10 @@ const router = Router();
 
 router.get("/", UsersController.getAll); // +
 router.get("/:userId", UsersController.getById); // +
-router.post("/auth/login", UsersController.login); // +-
+router.post("/auth/login", UsersController.login); // +
 router.post("/auth/register", UsersController.register); // +
 router.patch("/", upload.any(), UsersController.patch); // +
-router.delete("/", UsersController.logout);
-router.delete("/", UsersController.delete);
+router.delete("/", UsersController.logout); // +
+router.delete("/del", UsersController.delete); // +
 
 export default router;

@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import { envSchema } from "./schema";
 import { IEnvVars } from "./types";
 
-//TODO: Write unit tests for this
 dotenv.config();
 
 const envVarsFromProcess = {

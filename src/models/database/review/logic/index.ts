@@ -19,14 +19,14 @@ class ReviewDB {
     if (query.edited !== undefined) {
       conditions.edited = query.edited;
     }
-    if (query.minStarts || query.maxStarts) {
-      conditions.starts = {};
+    if (query.minStars || query.maxStars) {
+      conditions.stars = {};
     }
-    if (query.minStarts) {
-      conditions.price.$gte = query.minStarts;
+    if (query.minStars) {
+      conditions.stars.$gte = query.minStars;
     }
-    if (query.maxStarts) {
-      conditions.price.$lte = query.minStarts;
+    if (query.maxStars) {
+      conditions.stars.$lte = query.maxStars;
     }
     const dbSearch = ReviewModel.find(conditions);
     if (query.page) {
@@ -41,14 +41,14 @@ class ReviewDB {
       throw CustomError.notExist("The review with that id dose not exist");
     return review;
   }
-  async getByOrderId(orderId: Types.ObjectId, query?: IGetReviewQuery) {
-    const order = await OrderDB.getExternal(orderId);
-    if (!order)
-      throw CustomError.notExist("The order with that id dose not exist");
-    return query
-      ? await this._query(query).where({ orderId })
-      : await ReviewModel.find({ orderId });
-  }
+  // async getByOrderId(orderId: Types.ObjectId, query?: IGetReviewQuery) {
+  //   const order = await OrderDB.getExternal(orderId);
+  //   if (!order)
+  //     throw CustomError.notExist("The order with that id dose not exist");
+  //   return query
+  //     ? await this._query(query).where({ orderId })
+  //     : await ReviewModel.find({ orderId });
+  // }
   async getAllByBuyerId(buyerId: Types.ObjectId, query?: IGetReviewQuery) {
     const buyer = UserDB.getExternal(buyerId);
     if (!buyer)
@@ -74,15 +74,20 @@ class ReviewDB {
       ? await this._query(query).where({ goodId })
       : await ReviewModel.find({ goodId });
   }
-  async create(
-    buyerId: Types.ObjectId,
-    sellerId: Types.ObjectId,
-    data: ICreateReview
-  ) {
-    const buyer = await UserDB.getExternal(buyerId);
+  async create(authId: Types.ObjectId, data: ICreateReview) {
+    const buyer = await UserDB.getExternal(authId);
+    const order = await OrderDB.getExternal(data.orderId);
     if (!buyer)
       throw CustomError.notExist("The buyer with that id dose not exist");
-    return await ReviewModel.create({ ...data, buyerId, sellerId });
+    if (!order)
+      throw CustomError.notExist("The order with that id dose not exist");
+    return await ReviewModel.create({
+      ...data,
+      buyerId: authId,
+      sellerId: order.sellerId,
+      orderId: order.id,
+      goodId: order.goodId,
+    });
   }
   async patch(
     reviewId: Types.ObjectId,
@@ -92,15 +97,19 @@ class ReviewDB {
     const review = await ReviewModel.findById(reviewId);
     if (!review)
       throw CustomError.notExist("The review with that id dose not exist");
-    if (review.buyerId !== authId)
-      return await ReviewModel.findByIdAndUpdate(reviewId, data);
+    if (review.buyerId.toString() !== authId.toString())
+      throw CustomError.forbidden();
+    return await ReviewModel.findByIdAndUpdate(reviewId, {
+      ...data,
+      edited: true,
+    });
   }
   async delete(reviewId: Types.ObjectId, authId: Types.ObjectId) {
-    //TODO: Create check owner in all DB entities. Delete, patch etc.
     const review = await ReviewModel.findById(reviewId);
     if (!review)
       throw CustomError.notExist("The review with that id dose not exist");
-    if (review.buyerId !== authId) throw CustomError.forbidden();
+    if (review.buyerId.toString() !== authId.toString())
+      throw CustomError.forbidden();
     return await ReviewModel.findByIdAndDelete(reviewId);
   }
 }

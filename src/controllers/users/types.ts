@@ -19,6 +19,5 @@ export interface IGetUsersQuery {
 
 export interface IPatchUser {
   username?: string;
-  password?: string;
   about?: string;
 }

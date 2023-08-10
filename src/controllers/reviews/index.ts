@@ -5,8 +5,8 @@ import ReviewDB from "../../models/database/review/logic";
 import { Types } from "mongoose";
 import ReviewValidate from "./validate";
 import { ICreateReview } from "./types";
+import { IGetReviewQuery } from "../../models/database/review/logic/types";
 
-//TODO: Change any body to interfaces
 class ReviewsController {
   async getById(req: Request<{ reviewId: Types.ObjectId }>, res: Response) {
     try {
@@ -19,70 +19,65 @@ class ReviewsController {
       Utils.sendWrongResponse(res, err);
     }
   }
-  async getByOrderId(req: Request<{ orderId: Types.ObjectId }>, res: Response) {
-    try {
-      ReviewValidate.validateId(req.params.orderId);
-      Utils.sendSuccessResponse(
-        res,
-        await ReviewDB.getByOrderId(req.params.orderId)
-      );
-    } catch (err: any) {
-      Utils.sendWrongResponse(res, err);
-    }
-  }
   async getAllByBuyerId(
-    req: Request<{ buyerId: Types.ObjectId }>,
+    req: Request<{ buyerId: Types.ObjectId }, IGetReviewQuery>,
     res: Response
   ) {
     try {
       ReviewValidate.validateId(req.params.buyerId);
+      const validatedQuery = ReviewValidate.query(req.query as any);
       Utils.sendSuccessResponse(
         res,
-        await ReviewDB.getAllByBuyerId(req.params.buyerId)
+        await ReviewDB.getAllByBuyerId(req.params.buyerId, validatedQuery)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
   async getAllBySellerId(
-    req: Request<{ sellerId: Types.ObjectId }>,
+    req: Request<{ sellerId: Types.ObjectId }, IGetReviewQuery>,
     res: Response
   ) {
     try {
       ReviewValidate.validateId(req.params.sellerId);
+      const validatedQuery = ReviewValidate.query(req.query as any);
       Utils.sendSuccessResponse(
         res,
-        await ReviewDB.getAllBySellerId(req.params.sellerId)
+        await ReviewDB.getAllBySellerId(req.params.sellerId, validatedQuery)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
   async getAllByGoodId(
-    req: Request<{ goodId: Types.ObjectId }>,
+    req: Request<{ goodId: Types.ObjectId }, IGetReviewQuery>,
     res: Response
   ) {
     try {
       ReviewValidate.validateId(req.params.goodId);
+      const validatedQuery = ReviewValidate.query(req.query as any);
       Utils.sendSuccessResponse(
         res,
-        await ReviewDB.getAllByGoodId(req.params.goodId)
+        await ReviewDB.getAllByGoodId(req.params.goodId, validatedQuery)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
-  async create(req: Request<{}, {}, ICreateReview>, res: Response) {
+  async create(
+    req: Request<{ orderId: Types.ObjectId }, {}, ICreateReview>,
+    res: Response
+  ) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
+      ReviewValidate.validateId(req.params.orderId);
       const validatedBody = ReviewValidate.create(req.body);
       Utils.sendSuccessResponse(
         res,
-        await ReviewDB.create(
-          req.customAuth.id,
-          validatedBody.sellerId,
-          validatedBody
-        )
+        await ReviewDB.create(req.customAuth.id, {
+          ...validatedBody,
+          orderId: req.params.orderId,
+        })
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);

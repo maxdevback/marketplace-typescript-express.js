@@ -7,7 +7,7 @@ import UserDB from "../database/user/logic";
 import { Types } from "mongoose";
 
 class Auth {
-  expiresInForA = "3 days";
+  expiresInForA = "1h";
   expiresInForR = "30 days";
   maxAgeForCookies = 1000 * 60 * 60 * 24 * 30;
   create(data: authData) {
@@ -56,7 +56,6 @@ class Auth {
       }
       return tokensStatus;
     } catch (err) {
-      console.log(err);
       const tokensStatus: ITokensStatus = {
         status: "expired",
         tokenA,
@@ -70,7 +69,6 @@ class Auth {
           envVars.refreshTokenSecret
         ) as jwtAuthPayload;
       } catch (err) {
-        console.log(err);
         tokensStatus.status = "fullExpiresOrMissing";
         return tokensStatus;
       }

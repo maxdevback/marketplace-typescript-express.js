@@ -1,5 +1,4 @@
 import { Types } from "mongoose";
-//TODO: change response
 
 export interface ISuccessResponse {
   body: any;

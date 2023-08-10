@@ -2,13 +2,7 @@ import { Request, Response } from "express";
 import UserDB from "../../models/database/user/logic";
 import Utils from "../utils";
 import UsersValidate from "./validate";
-import {
-  ICreateUser,
-  IGetUsersQuery,
-  ILoginUser,
-  IPatchUser,
-  IRegisterUser,
-} from "./types";
+import { IGetUsersQuery, ILoginUser, IPatchUser, IRegisterUser } from "./types";
 import { Types } from "mongoose";
 import CustomError from "../../models/error";
 import Auth from "../../models/auth";
@@ -36,6 +30,7 @@ class UserController {
       const user = await UserDB.login(req.body);
       const tokens = Auth.create({ id: user._id, username: user.username });
       Auth.set(res, tokens.tokenA, tokens.tokenR);
+      await UserDB.setAuthTokens(user._id, tokens);
       Utils.sendSuccessResponse(res, user);
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);

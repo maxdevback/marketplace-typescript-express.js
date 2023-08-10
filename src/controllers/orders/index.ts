@@ -46,19 +46,27 @@ class OrdersController {
       if (!req.customAuth) throw CustomError.notAuth();
       Utils.sendSuccessResponse(
         res,
-        await OrderDB.getAllByGoodId(req.params.goodId)
+        await OrderDB.getAllByGoodId(req.params.goodId, req.customAuth.id)
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
     }
   }
-  async create(req: Request<{}, {}, ICreateOrder>, res: Response) {
+  async create(
+    req: Request<{ goodId: Types.ObjectId }, {}, ICreateOrder>,
+    res: Response
+  ) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
       OrderValidate.create(req.body);
+      OrderValidate.validateId(req.params.goodId);
       Utils.sendSuccessResponse(
         res,
-        await OrderDB.create({ ...req.body, buyerId: req.customAuth.id })
+        await OrderDB.create({
+          ...req.body,
+          buyerId: req.customAuth.id,
+          goodId: req.params.goodId,
+        })
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
@@ -110,7 +118,11 @@ class OrdersController {
       const validatedBody = OrderValidate.create(req.body);
       Utils.sendSuccessResponse(
         res,
-        await OrderDB.patchUnconfirmed(req.params.orderId, validatedBody)
+        await OrderDB.patchUnconfirmed(
+          req.params.orderId,
+          req.customAuth.id,
+          validatedBody
+        )
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);

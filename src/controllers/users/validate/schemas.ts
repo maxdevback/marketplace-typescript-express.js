@@ -8,6 +8,7 @@ class UserValidateSchemas {
 
   loginSchema = Joi.object({
     username: Joi.string().min(4).max(30).required(),
+    email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
   });
 
@@ -28,7 +29,6 @@ class UserValidateSchemas {
 
   patchSchema = Joi.object({
     username: Joi.string().min(4).max(30),
-    password: Joi.string().min(6),
     about: Joi.string().max(300),
   });
 }

@@ -44,7 +44,7 @@ class UserDB {
     if (!user)
       throw CustomError.notExist("The user with that id dose not exist");
     user.authTokens.push(tokens);
-    await user.save();
+    return await user.save();
   }
   async getById(id: Types.ObjectId) {
     const user = await UserModel.findById(id);

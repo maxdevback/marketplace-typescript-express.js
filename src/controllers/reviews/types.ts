@@ -1,9 +1,7 @@
 import { Types } from "mongoose";
 
-export interface ICreateReview extends Document {
-  buyerId: Types.ObjectId;
-  sellerId: Types.ObjectId;
-  goodId: Types.ObjectId;
+export interface ICreateReview {
+  orderId: Types.ObjectId;
   stars: number;
   text: string;
 }

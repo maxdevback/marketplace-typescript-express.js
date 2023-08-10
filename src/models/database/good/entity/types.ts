@@ -5,4 +5,5 @@ export interface IGood extends Document {
   description: string;
   price: number;
   sellerId: Types.ObjectId;
+  filesPaths: string[];
 }

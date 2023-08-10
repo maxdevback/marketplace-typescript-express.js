@@ -54,12 +54,15 @@ class GoodController {
   async create(req: Request<{}, {}, ICreateOrPatchGood>, res: Response) {
     try {
       if (!req.customAuth) throw CustomError.notAuth();
-      console.log(req.files);
       const validatedBody: ICreateOrPatchGood =
         ValidateGood.validateCreateOrPatch(req.body);
       Utils.sendSuccessResponse(
         res,
-        await GoodDB.create(req.customAuth.id, validatedBody)
+        await GoodDB.create(
+          req.customAuth.id,
+          validatedBody,
+          req.files as unknown as [{ filename: string }]
+        )
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);
@@ -74,7 +77,11 @@ class GoodController {
       ValidateGood.validateId(req.params.goodId);
       Utils.sendSuccessResponse(
         res,
-        await GoodDB.patch(req.params.goodId, req.body)
+        await GoodDB.patch(
+          req.params.goodId,
+          req.body,
+          req.files as unknown as [{ filename: string }]
+        )
       );
     } catch (err: any) {
       Utils.sendWrongResponse(res, err);

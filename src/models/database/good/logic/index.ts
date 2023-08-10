@@ -42,15 +42,17 @@ class GoodDB {
   async create(
     sellerId: Types.ObjectId,
     data: ICreateOrPatchGood,
-    files?: [{ filename: string }]
+    files: [{ filename: string }] | undefined
   ) {
     const duplicate = await GoodModel.findOne({ title: data.title });
-    console.log(duplicate);
     if (duplicate) {
       throw CustomError.alreadyExist("The good with that title already exist");
     }
-
-    const good = await GoodModel.create({ ...data, sellerId });
+    const good = await GoodModel.create({
+      ...data,
+      sellerId,
+      filesPaths: files?.map((i) => i.filename),
+    });
     return good;
   }
   async getById(goodId: Types.ObjectId) {
@@ -76,14 +78,20 @@ class GoodDB {
     if (!good) throw CustomError.notExist("The good not found");
     if (good.sellerId.toString() !== sellerId.toString())
       throw CustomError.notExist("You're not owner of this good");
-    return good;
+    return GoodModel.findByIdAndDelete(id);
   }
-  async patch(id: string, data: ICreateOrPatchGood) {
+  async patch(
+    id: string,
+    data: ICreateOrPatchGood,
+    files: [{ filename: string }] | undefined
+  ) {
     const good = await GoodModel.findById(id);
     if (!good)
       throw CustomError.notExist("The good with that id dose not exist");
-
-    return await GoodModel.findByIdAndUpdate(id, data);
+    const filesPaths = files?.[0]
+      ? files?.map((file) => file.filename)
+      : good.filesPaths;
+    return await GoodModel.findByIdAndUpdate(id, { ...data, filesPaths });
   }
 }
 
