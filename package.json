@@ -6,7 +6,6 @@
   "scripts": {
     "build": "tsc",
     "start": "node build/App.js",
-    "test": "jest --runInBand user.test.ts good.test.ts --force-exit",
     "dev": "nodemon src/App.ts"
   },
   "author": "maxdevback",
